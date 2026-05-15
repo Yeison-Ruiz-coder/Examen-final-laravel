@@ -2,6 +2,11 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SoldierController;
+use App\Http\Controllers\ArmyCorpController;
+use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\QuaterController;
+use App\Http\Controllers\CompanyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,7 +18,8 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::apiResource('soldiers', SoldierController::class);
+Route::apiResource('army_corp', ArmyCorpController::class);
+Route::apiResource('service', ServiceController::class);
+Route::apiResource('quater', QuaterController::class);
+Route::apiResource('company', CompanyController::class);
