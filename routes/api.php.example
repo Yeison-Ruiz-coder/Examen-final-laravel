@@ -1,0 +1,46 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\SoldierController;
+use App\Http\Controllers\Api\ArmyCorpController;
+use App\Http\Controllers\Api\CompanyController;
+use App\Http\Controllers\Api\QuaterController;
+use App\Http\Controllers\Api\ServiceController;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Aquí defines las rutas de tu API con versionado (v1)
+|
+*/
+
+Route::prefix('v1')->group(function () {
+
+    // Rutas de recursos
+    Route::apiResource('soldiers', SoldierController::class);
+    Route::apiResource('army-corps', ArmyCorpController::class);
+    Route::apiResource('companies', CompanyController::class);
+    Route::apiResource('quaters', QuaterController::class);
+    Route::apiResource('services', ServiceController::class);
+
+    // Rutas adicionales personalizadas
+    // Route::get('soldiers/{soldier}/services', [SoldierController::class, 'services']);
+    // Route::post('soldiers/{soldier}/services', [SoldierController::class, 'attachServices']);
+    // Route::delete('soldiers/{soldier}/services/{service}', [SoldierController::class, 'detachService']);
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Usuario autenticado
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+});

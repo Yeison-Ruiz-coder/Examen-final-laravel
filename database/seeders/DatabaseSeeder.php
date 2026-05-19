@@ -12,10 +12,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\Soldier::factory(10)->create();
-        \App\Models\Service::factory(10)->create();
+        // Crear primero los datos relacionados
         \App\Models\Army_corp::factory(10)->create();
         \App\Models\Quater::factory(10)->create();
         \App\Models\Company::factory(10)->create();
+        \App\Models\Service::factory(10)->create();
+
+        // Luego crear los Soldiers con las relaciones
+        \App\Models\Soldier::factory(100)->create();
     }
 }

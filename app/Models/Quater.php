@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class Quater extends Model
 {
@@ -14,28 +15,95 @@ class Quater extends Model
         "ubicacion"
     ];
 
+    // Listas blancas para seguridad en APIs
+    protected $allowIncluded = ['soldiers'];
+    protected $allowFilter = ['id', 'nombre', 'ubicacion'];
+    protected $allowSort = ['id', 'nombre', 'ubicacion'];
+
     public function soldiers()
     {
         return $this->hasMany(Soldier::class, 'quarter_id');
     }
 
-    public function scopeFilter($query, $filters)
+    /**
+     * Scope para incluir relaciones de forma segura
+     */
+    public function scopeIncluded(Builder $query)
     {
-        if (isset($filters['nombre'])) {
-            $query->where('nombre', $filters['nombre']);
+        if (empty($this->allowIncluded) || empty(request('included'))) {
+            return;
         }
 
-        if (isset($filters['ubicacion'])) {
-            $query->where('ubicacion', $filters['ubicacion']);
+        $relations = explode(',', request('included'));
+        $allowIncluded = collect($this->allowIncluded);
+
+        foreach ($relations as $key => $relationship) {
+            if (!$allowIncluded->contains($relationship)) {
+                unset($relations[$key]);
+            }
         }
 
-        if (isset($filters['search'])) {
-            $query->where(function ($q) use ($filters) {
-                $q->where('nombre', 'like', '%' . $filters['search'] . '%')
-                    ->orWhere('ubicacion', 'like', '%' . $filters['search'] . '%');
-            });
+        $query->with($relations);
+    }
+
+    /**
+     * Scope para filtrar por parámetros HTTP
+     */
+    public function scopeFilter(Builder $query)
+    {
+        if (empty($this->allowFilter) || empty(request('filter'))) {
+            return;
         }
 
-        return $query;
+        $filters = request('filter');
+        $allowFilter = collect($this->allowFilter);
+
+        foreach ($filters as $filter => $value) {
+            if ($allowFilter->contains($filter)) {
+                $query->where($filter, 'LIKE', '%' . $value . '%');
+            }
+        }
+    }
+
+    /**
+     * Scope para ordenar resultados
+     */
+    public function scopeSort(Builder $query)
+    {
+        if (empty($this->allowSort) || empty(request('sort'))) {
+            return;
+        }
+
+        $sortFields = explode(',', request('sort'));
+        $allowSort = collect($this->allowSort);
+
+        foreach ($sortFields as $sortField) {
+            $direction = 'asc';
+
+            if (substr($sortField, 0, 1) == '-') {
+                $direction = 'desc';
+                $sortField = substr($sortField, 1);
+            }
+
+            if ($allowSort->contains($sortField)) {
+                $query->orderBy($sortField, $direction);
+            }
+        }
+    }
+
+    /**
+     * Scope para obtener todos o paginar
+     */
+    public function scopeGetOrPaginate(Builder $query)
+    {
+        if (request('perPage')) {
+            $perPage = intval(request('perPage'));
+
+            if ($perPage) {
+                return $query->paginate($perPage);
+            }
+        }
+
+        return $query->get();
     }
 }
